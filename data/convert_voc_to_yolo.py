@@ -49,7 +49,7 @@ def convert_annotation(dir_path, output_path, image_path):
             continue
         cls_id = classes.index(cls)
         xmlbox = obj.find('bndbox')
-        b = (float(xmlbox.find('xmin').text), float(xmlbox.find('xmax').text), float(xmlbox.find('ymin').text), float(xmlbox.find('ymax').text))
+        b = (round(float(xmlbox.find('xmin').text), 4), round(float(xmlbox.find('xmax').text), 4), round(float(xmlbox.find('ymin').text), 4), round(float(xmlbox.find('ymax').text), 4))
         bb = convert((w,h), b)
         out_file.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
 
