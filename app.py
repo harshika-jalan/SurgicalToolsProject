@@ -53,6 +53,14 @@ def success():
         f.save(file_path)
         return render_template("success.html", name = f.filename)
 
+@app.route('/records')
+def record():
+    return render_template("recordsMenu.html")
+
+@app.route('/newSurgery')
+def newSurgery():
+    return render_template("success.html")
+
 
 
 # API that returns JSON with classes found in images

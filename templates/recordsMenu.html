@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Records Menu</title>
+<script language="javascript">
+function SelectRedirect(){
+// ON selection of section this function will work
+//alert( document.getElementById('s1').value);
+
+switch(document.getElementById('s1').value)
+{
+case "Add New Surgical Procedure":
+window.location="../newSurgery";
+break;
+
+case "Add New Instruments for an Existing Surgical Procedure":
+window.location="../newInstrument";
+break;
+
+case "Replace Instruments for Existing Surgical Procedure":
+window.location="../replaceInstrument";
+break;
+
+/// Can be extended to other different selections of SubCategory //////
+default:
+window.location="../"; // if no selection matches then redirected to home page
+break;
+}// end of switch
+}
+//////////////////
+</script>
+</head>
+<body>
+
+<SELECT id="s1" NAME="section" onChange="SelectRedirect();">
+<Option value="">Select Section</option>
+<Option value="Add New Surgical Procedure">Add New Surgical Procedure</option>
+<Option value="Add New Instruments for an Existing Surgical Procedure">Add New Instruments for an Existing Surgical Procedure</option>
+<Option value="Replace Instruments for Existing Surgical Procedure">Replace Instruments for Existing Surgical Procedure</option>
+</SELECT>
+
+</body>
+</html>
