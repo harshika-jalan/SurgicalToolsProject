@@ -13,12 +13,8 @@ case "Add New Surgical Procedure":
 window.location="../newSurgery";
 break;
 
-case "Add New Instruments for an Existing Surgical Procedure":
-window.location="../newInstrument";
-break;
-
-case "Replace Instruments for Existing Surgical Procedure":
-window.location="../replaceInstrument";
+case "Add/Remove Instruments for an Existing Surgical Procedure":
+window.location="../changeInstruments";
 break;
 
 /// Can be extended to other different selections of SubCategory //////
@@ -35,8 +31,8 @@ break;
 <SELECT id="s1" NAME="section" onChange="SelectRedirect();">
 <Option value="">Select Section</option>
 <Option value="Add New Surgical Procedure">Add New Surgical Procedure</option>
-<Option value="Add New Instruments for an Existing Surgical Procedure">Add New Instruments for an Existing Surgical Procedure</option>
-<Option value="Replace Instruments for Existing Surgical Procedure">Replace Instruments for Existing Surgical Procedure</option>
+<Option value="Add/Remove Instruments for an Existing Surgical Procedure">Add/Remove Instruments for an Existing Surgical Procedure</option>
+
 </SELECT>
 
 </body>

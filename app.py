@@ -93,6 +93,25 @@ def addNewSurgery():
         surgeries[name] = instrument_list
         serialize(surgeries)
         return render_template("success.html")
+#Adding/Removing instruments from existing surgical procedure
+@app.route('/changeInstruments')
+def changeInstruments():
+    return render_template("changeInstrumentsForm.html")
+
+@app.route('/AddRemoveInstruments', methods=['GET', 'POST'])
+def AddRemoveInstruments():
+    if request.method == "POST":
+        name = request.form.get("name")
+        add_instruments_string = request.form.get("addInstrument")
+        if len(add_instruments_string) != 0:
+            add_instrument_list = add_instruments_string.split(', ')
+            surgeries[name] = surgeries[name] + add_instrument_list
+        remove_instruments_string = request.form.get("removeInstrument")
+        if len(remove_instruments_string) != 0:
+            remove_instrument_list = remove_instruments_string.split(', ')
+        surgeries[name] = [s for s in surgeries[name] if s not in remove_instrument_list]
+        serialize(surgeries)
+        return render_template("success.html")
 
 # API that returns JSON with classes found in images
 @app.route('/detections', methods=['GET','POST'])

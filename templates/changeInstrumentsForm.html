@@ -1,0 +1,43 @@
+<html>
+<head>
+<title> ChangeInstrumentsForm</title>
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles.css') }}">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+	<form action="/AddRemoveInstruments" id = "changeInstruments" method="POST">
+	<div>
+		<h1 class="card-title">Add/Remove Instruments for an Existing Surgical Procedure</h1>
+		<form >
+
+		<div class="form-group">
+			<label for="Name">Enter name of the Surgical Procedure</label>
+			<input type="text" name="name" class="form-control" id="formGroupExampleInput2">
+		</div>
+
+
+		<div class="form-group">
+      <label>
+        Enter the instrument names which need to be added
+        (You can enter multiple instrument names each seperated by comma)
+    </label>
+    <textarea name="addInstrument" form="changeInstruments">Enter text here...</textarea>
+	   	</div>
+
+			<div class="form-group">
+	      <label>
+	        Enter the instrument names which need to be removed
+	        (You can enter multiple instrument names each seperated by comma)
+	    </label>
+	    <textarea name="removeInstrument" form="changeInstruments">Enter text here...</textarea>
+		   	</div>
+
+	  <div class="form-group">
+	    <input type="submit" value="Submit" class="btn btn-primary">
+	  </div>
+
+		</form>
+	</div>
+
+</body>
+</html>
