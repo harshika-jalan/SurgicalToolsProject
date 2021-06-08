@@ -8,14 +8,20 @@
 </head>
 <body>
 	<div>
-		<h1 class="card-title">Tools</h1>
+		<h1 class="card-title">Instruments</h1>
   </div>
 	{% block content %}
+	<div>
+		<h3>Name of Surgery</h3>
+		{{name}}
+	</div>
 	 <div>
-		 {{data}}
+		 <h3>Missing Instruments</h3>
+		 {{missing}}
 	 </div>
 	 <div>
-		 {{name}}
+		 <h3>Wrong Instruments</h3>
+		 {{wrong}}
 	 </div>
 	{% endblock content %}
 

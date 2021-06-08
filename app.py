@@ -118,7 +118,7 @@ def AddRemoveInstruments():
 def get_detections():
     if request.method == 'POST':
         raw_images = []
-        user_surgery_name = request.form.get("surgery_name")
+        surgery_name = request.form.get("surgery_name")
         images = request.files.getlist("file")
         image_names = []
         #images = [request.files["images"]]
@@ -167,12 +167,13 @@ def get_detections():
             cv2.imwrite(output_path + 'detection' + str(num) + '.jpg', img)
             print('output saved to: {}'.format(output_path + 'detection' + str(num) + '.jpg'))
 
+        missingInstruments, wrongInstruments = check(surgery_name, response)
         #remove temporary images
         for name in image_names:
             os.remove(name)
         try:
             #return jsonify({"response":response}), 200
-            return render_template("display.html", data=response, name=user_surgery_name)
+            return render_template("display.html", name=surgery_name, missing=missingInstruments, wrong=wrongInstruments)
 
         except FileNotFoundError:
             abort(404)
@@ -214,5 +215,18 @@ def get_image():
         return Response(response=response, status=200, mimetype='image/png')
     except FileNotFoundError:
         abort(404)
+
+#method to check which tools are missing and incorrect
+def check(name, response):
+    requiredInstruments = surgeries[name]
+    givenInstruments = []
+    for r in response:
+        for detection in r['detections']:
+            givenInstruments += [detection['class']]
+    missingInstruments = [instrument for instrument in requiredInstruments if instrument not in givenInstruments]
+    wrongInstruments = [instrument for instrument in givenInstruments if instrument not in requiredInstruments]
+    return missingInstruments, wrongInstruments
+
+
 if __name__ == '__main__':
     app.run(debug=True, host = '0.0.0.0', port=5000)
