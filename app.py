@@ -10,7 +10,7 @@ from yolov3_tf2.dataset import transform_images, load_tfrecord_dataset
 from yolov3_tf2.utils import draw_outputs
 from flask import Flask, request, Response, jsonify, send_from_directory, abort, render_template
 import os
-
+#@source https://github.com/theAIGuysCode/Object-Detection-API
 # customize your API through the following parameters
 classes_path = './data/labels/custom.names'
 weights_path = './weights/yolov3.tf'
@@ -60,6 +60,7 @@ def success():
 def get_detections():
     if request.method == 'POST':
         raw_images = []
+        user_surgery_name = request.form.get("surgery_name")
         images = request.files.getlist("file")
         image_names = []
         #images = [request.files["images"]]
@@ -113,7 +114,7 @@ def get_detections():
             os.remove(name)
         try:
             #return jsonify({"response":response}), 200
-            return render_template("display.html", data=response)
+            return render_template("display.html", data=response, name=user_surgery_name)
 
         except FileNotFoundError:
             abort(404)
