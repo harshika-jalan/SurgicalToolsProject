@@ -6,5 +6,10 @@
     "Knee Surgery": [
         "scissor_golden",
         "scissor_length1"
+    ],
+    "Eye Surgery": [
+        "pincer",
+        "scissor_length2",
+        "scissor_length1"
     ]
 }

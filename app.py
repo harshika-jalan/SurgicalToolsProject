@@ -10,6 +10,7 @@ from yolov3_tf2.dataset import transform_images, load_tfrecord_dataset
 from yolov3_tf2.utils import draw_outputs
 from flask import Flask, request, Response, jsonify, send_from_directory, abort, render_template
 import os
+import json
 #@source https://github.com/theAIGuysCode/Object-Detection-API
 # customize your API through the following parameters
 classes_path = './data/labels/custom.names'
@@ -35,6 +36,24 @@ print('weights loaded')
 class_names = [c.strip() for c in open(classes_path).readlines()]
 print('classes loaded')
 
+#method for serializing surgical data to json file
+def serialize(surgeries):
+    with open("surgical_data.json", "w") as write_file:
+        json.dump(surgeries, write_file, indent=4)
+
+#method for deserializing surgical data to json file
+def deserialize():
+    f = open("surgical_data.json",)
+    #returns json object as dictionary
+    surgeries=json.load(f)
+    #closing file
+    f.close()
+    return surgeries
+
+surgeries = deserialize()
+
+
+
 # Initialize Flask application
 app = Flask(__name__)
 @app.route('/')
@@ -53,15 +72,27 @@ def success():
         f.save(file_path)
         return render_template("success.html", name = f.filename)
 
+
+#APIs to maintain and change surgical data records
+#displaying menu
 @app.route('/records')
 def record():
     return render_template("recordsMenu.html")
 
+#Adding New Surgery
 @app.route('/newSurgery')
 def newSurgery():
-    return render_template("success.html")
+    return render_template("newSurgeryForm.html")
 
-
+@app.route('/addNewSurgery', methods=['GET', 'POST'])
+def addNewSurgery():
+    if request.method == "POST":
+        name = request.form.get("name")
+        instruments_string = request.form.get("instrument")
+        instrument_list = instruments_string.split(', ')
+        surgeries[name] = instrument_list
+        serialize(surgeries)
+        return render_template("success.html")
 
 # API that returns JSON with classes found in images
 @app.route('/detections', methods=['GET','POST'])
