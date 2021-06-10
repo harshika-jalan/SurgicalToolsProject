@@ -1,0 +1,61 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.25/webcam.js"></script>
+</head>
+
+<body>
+    <div id="camera" style="height:auto;width:auto; text-align:left;"></div>
+    <input type="button" value="Take a Snap and Download Picture" id="btPic"
+        onclick="takeSnapShot()" />
+</body>
+
+<script>
+    // CAMERA SETTINGS.
+    Webcam.set({
+        width: 220,
+        height: 190,
+        image_format: 'jpeg',
+        jpeg_quality: 100
+    });
+    Webcam.attach('#camera');
+
+    // TAKE A SNAPSHOT.
+    takeSnapShot = function () {
+        Webcam.snap(function (data_uri) {
+            downloadImage('arun', data_uri);
+        });
+    }
+
+    // DOWNLOAD THE IMAGE.
+    downloadImage = function (name, datauri) {
+        var a = document.createElement('a');
+        a.setAttribute('download', name + '.png');
+        a.setAttribute('href', datauri);
+        //var request = new XMLHttpRequest();
+        //request.open('POST', '/submit?image=' + video.toString('base64'), true);
+        //request.send();
+        a.click();
+    }
+    function upload() {
+    console.log("Uploading...")
+    var image = document.getElementById('image').src;
+    var form = document.getElementById('myForm');
+    var formData = new FormData(form);
+    formData.append("file", image);
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", "/signup");
+
+    // check when state changes,
+    xmlhttp.onreadystatechange = function() {
+
+    if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        alert(xmlhttp.responseText);
+        }
+    }
+
+    xmlhttp.send(formData);
+    console.log(formData.get('file'));
+    console.log(formData.get('userID'));
+    }
+</script>
+</html>
