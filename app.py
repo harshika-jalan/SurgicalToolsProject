@@ -11,6 +11,10 @@ from yolov3_tf2.utils import draw_outputs
 from flask import Flask, request, Response, jsonify, send_from_directory, abort, render_template
 import os
 import json
+import base64
+import io
+from PIL import Image
+from base64 import decodestring
 #@source https://github.com/theAIGuysCode/Object-Detection-API
 # customize your API through the following parameters
 classes_path = './data/labels/custom.names'
@@ -56,8 +60,16 @@ surgeries = deserialize()
 
 # Initialize Flask application
 app = Flask(__name__)
+
+@app.route('/signup', methods=['GET','POST'])
+def signup():
+    if request.method == 'POST':
+        return jsonify(request.form['userID'], request.form['file'])
+    return render_template('signup.html')
+
 @app.route('/')
 def home():
+    #return render_template("file_upload.html")
     return render_template("file_upload.html")
 
 @app.route('/success', methods = ['POST'])
@@ -113,31 +125,63 @@ def AddRemoveInstruments():
         serialize(surgeries)
         return render_template("success.html")
 
+@app.route('/video_feed')
+def video_feed(video):
+    return Response(gen(video),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+def gen(video):
+
+    success, image = video.read()
+    ret, jpeg = cv2.imencode('.jpg', image)
+    frame = jpeg.tobytes()
+    yield (b'--frame\r\n'
+           b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+
+
 # API that returns JSON with classes found in images
 @app.route('/detections', methods=['GET','POST'])
 def get_detections():
     if request.method == 'POST':
-        raw_images = []
         surgery_name = request.form.get("surgery_name")
-        images = request.files.getlist("file")
+        camera = cv2.VideoCapture(0)
+        i = 0
+        images = []
         image_names = []
-        #images = [request.files["images"]]
-        #image_name = image.filename
+        while i<=5:
+            return_value, image = camera.read()
+            #cv2.imshow('frame', image)
+            #video_feed(camera)
+            key = cv2.waitKey(1)
+            if i==5: #SPACE pressed hence we capture image k%256 == 32
+                images += [image]
+                image_names += ['opencv'+str(i)+'.png']
+                break
+                #cv2.imwrite('opencv'+str(i)+'.png', image)
+            i += 1
+        del(camera)
+        raw_images = []
+        #surgery_name = request.form.get("surgery_name")
+        #images = request.files.getlist("file")
+
+        k = -1
         for image in images:
-            image_name = image.filename
-            image_names.append(image_name)
-            image.save(os.path.join(os.getcwd(), image_name))
-            img_raw = tf.image.decode_image(
-                open(image_name, 'rb').read(), channels=3)
-            raw_images.append(img_raw)
+            k = k+1
+            #image_name = image.filename
+            #image_names.append(image_name)
+            #image.save(os.path.join(os.getcwd(), image_names[k]))
+            #img_raw = tf.image.decode_image(
+                #open(image_names[k], 'rb').read(), channels=3)
+            raw_images.append(image)
 
         num = 0
 
         # create list for final response
         response = []
+        detected_classes_image_path = ""
 
         for j in range(len(raw_images)):
             # create list of responses for current image
+
             responses = []
             raw_img = raw_images[j]
             num+=1
@@ -162,18 +206,21 @@ def get_detections():
                 "image": image_names[j],
                 "detections": responses
             })
-            img = cv2.cvtColor(raw_img.numpy(), cv2.COLOR_RGB2BGR)
+            img = cv2.cvtColor(raw_img, cv2.COLOR_RGB2BGR)
             img = draw_outputs(img, (boxes, scores, classes, nums), class_names)
             cv2.imwrite(output_path + 'detection' + str(num) + '.jpg', img)
+            detected_classes_image_path = '../detections/' + 'detection' + str(num) + '.jpg'
             print('output saved to: {}'.format(output_path + 'detection' + str(num) + '.jpg'))
+
+
 
         missingInstruments, wrongInstruments = check(surgery_name, response)
         #remove temporary images
-        for name in image_names:
-            os.remove(name)
+        #for name in image_names:
+            #os.remove(name)
         try:
             #return jsonify({"response":response}), 200
-            return render_template("display.html", name=surgery_name, missing=missingInstruments, wrong=wrongInstruments)
+            return render_template("display.html", name=surgery_name, missing=missingInstruments, wrong=wrongInstruments, detected_classes_image=detected_classes_image_path)
 
         except FileNotFoundError:
             abort(404)

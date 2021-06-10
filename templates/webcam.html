@@ -36,26 +36,7 @@
         //request.send();
         a.click();
     }
-    function upload() {
-    console.log("Uploading...")
-    var image = document.getElementById('image').src;
-    var form = document.getElementById('myForm');
-    var formData = new FormData(form);
-    formData.append("file", image);
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("POST", "/signup");
+    //function upload() {
 
-    // check when state changes,
-    xmlhttp.onreadystatechange = function() {
-
-    if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-        alert(xmlhttp.responseText);
-        }
-    }
-
-    xmlhttp.send(formData);
-    console.log(formData.get('file'));
-    console.log(formData.get('userID'));
-    }
 </script>
 </html>
