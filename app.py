@@ -273,14 +273,13 @@ def get_detections():
         print("executing")
         for name in image_names:
             os.remove(name)
-            try:
-                #return jsonify({"response":response}), 200
-                print("executing2")
-                headers = {'Content-Type': 'text/html'}
-                return make_response(render_template("display.html", name=surgery_name, missing=missingInstruments, wrong=wrongInstruments, detected_classes_image=detected_classes_image_path), 200, headers)
+        try:
+            #return jsonify({"response":response}), 200
+            #print("executing2")
+            return render_template("display.html", name=surgery_name, missing=missingInstruments, wrong=wrongInstruments, detected_classes_image=detected_classes_image_path)
 
-            except FileNotFoundError:
-                abort(404)
+        except FileNotFoundError:
+            abort(404)
 
 # API that returns image with detections on it
 @app.route('/image', methods= ['POST'])
