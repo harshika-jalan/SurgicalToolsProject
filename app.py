@@ -207,7 +207,7 @@ def nameform():
     return render_template("file_upload.html")
 @app.route('/result', methods=['GET','POST'])
 def result():
-    return render_template("display.html", data=response, name=surgery_name, missing=missingInstruments, wrong=wrongInstruments)
+    return render_template("display.html", data=response, name=surgery_name, missing=missingInstruments, wrong=wrongInstruments, path=detected_classes_image_path)
 
 
 @app.route('/upload', methods=['GET','POST'])
@@ -232,6 +232,7 @@ def upload():
 
         # create list for final response
         global response
+        global detected_classes_image_path
         response = []
         detected_classes_image_path = ""
 
@@ -264,7 +265,8 @@ def upload():
             img = cv2.cvtColor(raw_img.numpy(), cv2.COLOR_RGB2BGR)
             img = draw_outputs(img, (boxes, scores, classes, nums), class_names)
             cv2.imwrite(output_path + 'detection' + str(num) + '.jpg', img)
-            detected_classes_image_path = '../detections/' + 'detection' + str(num) + '.jpg'
+            detected_classes_image_path = './static/' + 'detection' + str(num) + '.jpg'
+            cv2.imwrite('./static/' + 'detection' + str(num) + '.jpg', img)
             print('output saved to: {}'.format(output_path + 'detection' + str(num) + '.jpg'))
         global missingInstruments
         global wrongInstruments
