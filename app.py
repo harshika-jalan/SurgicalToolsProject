@@ -8,7 +8,7 @@ from yolov3_tf2.models import (
 )
 from yolov3_tf2.dataset import transform_images, load_tfrecord_dataset
 from yolov3_tf2.utils import draw_outputs
-from flask import Flask, request, Response, jsonify, send_from_directory, abort, render_template, render_template_string
+from flask import Flask, request, Response, jsonify, send_from_directory, abort, render_template, render_template_string, make_response
 import os
 import json
 import base64
@@ -83,6 +83,7 @@ def home():
 var video = document.getElementById('video');
 var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
+var localstream;
 
 // Get access to the camera!
 if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -90,6 +91,7 @@ if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
         //video.src = window.URL.createObjectURL(stream);
         video.srcObject = stream;
+        localstream = stream;
         video.play();
     });
 }
@@ -117,10 +119,18 @@ function upload(file) {
         }
         alert(this.response);
     };
+    vidOff()
     xhr.send(formdata);
 
 }
-
+function vidOff() {
+  //clearInterval(theDrawLoop);
+  //ExtensionData.vidStatus = 'off';
+  video.pause();
+  video.src = "";
+  localstream.getTracks()[0].stop();
+  console.log("Vid off");
+}
 
 
 </script>
@@ -193,14 +203,21 @@ def gen(video):
 
 
 # API that returns JSON with classes found in images
+images = []
 @app.route('/upload', methods=['GET','POST'])
 def upload():
     if request.method == 'POST':
         images = request.files.getlist('snap')
-        surgery_name = "Eye Surgery"
+        return render_template("file_upload.html")
+
+@app.route('/detections', methods=['GET','POST'])
+def get_detections():
+    if request.method == 'POST':
+        #images = request.files.getlist('snap')
+        #surgery_name = "Eye Surgery"
         raw_images = []
         image_names = []
-        #surgery_name = request.form.get("surgery_name")
+        surgery_name = request.form.get("surgery_name")
         #images = request.files.getlist("file")
         for image in images:
             image_name = image.filename
@@ -255,7 +272,8 @@ def upload():
             try:
                 #return jsonify({"response":response}), 200
                 print("executing2")
-                return render_template("display.html", name=surgery_name, missing=missingInstruments, wrong=wrongInstruments, detected_classes_image=detected_classes_image_path)
+                headers = {'Content-Type': 'text/html'}
+                return make_response(render_template("display.html", name=surgery_name, missing=missingInstruments, wrong=wrongInstruments, detected_classes_image=detected_classes_image_path), 200, headers)
 
             except FileNotFoundError:
                 abort(404)
