@@ -25,6 +25,7 @@ size = 416                      # size images are resized to for model
 output_path = './detections/'   # path to output folder where images with detections are saved
 num_classes = 6                # number of classes in model
 
+
 # load in weights and classes
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 if len(physical_devices) > 0:
@@ -114,7 +115,7 @@ function upload(file) {
     xhr.onload = function() {
         if(this.status = 200) {
             //console.log(this.response);
-            window.location.href = '/nameform';
+            window.location.href = '/result';
         } else {
             console.error(xhr);
         }
@@ -204,24 +205,29 @@ def gen(video):
 
 
 # API that returns JSON with classes found in images
-images = []
-@app.route('/upload', methods=['GET','POST'])
-def upload():
+
+#@app.route('/upload', methods=['GET','POST'])
+def upload2():
     if request.method == 'POST':
         images = request.files.getlist('snap')
         return redirect(url_for('nameform'))
 @app.route('/nameform', methods=['GET','POST'])
 def nameform():
     return render_template("file_upload.html")
+@app.route('/result', methods=['GET','POST'])
+def result():
+    return render_template("display.html", data=response, name=surgery_name, missing=missingInstruments, wrong=wrongInstruments)
 
-@app.route('/detections', methods=['GET','POST'])
-def get_detections():
+
+@app.route('/upload', methods=['GET','POST'])
+def upload():
     if request.method == 'POST':
-        #images = request.files.getlist('snap')
-        #surgery_name = "Eye Surgery"
+        images = request.files.getlist('snap')
+        global surgery_name
+        surgery_name = "Eye Surgery"
         raw_images = []
         image_names = []
-        surgery_name = request.form.get("surgery_name")
+        #surgery_name = request.form.get("surgery_name")
         #images = request.files.getlist("file")
         for image in images:
             image_name = image.filename
@@ -234,6 +240,7 @@ def get_detections():
         num = 0
 
         # create list for final response
+        global response
         response = []
         detected_classes_image_path = ""
 
@@ -268,18 +275,20 @@ def get_detections():
             cv2.imwrite(output_path + 'detection' + str(num) + '.jpg', img)
             detected_classes_image_path = '../detections/' + 'detection' + str(num) + '.jpg'
             print('output saved to: {}'.format(output_path + 'detection' + str(num) + '.jpg'))
+        global missingInstruments
+        global wrongInstruments
         missingInstruments, wrongInstruments = check(surgery_name, response)
         #remove temporary images
         print("executing")
         for name in image_names:
             os.remove(name)
-        try:
+        #try:
             #return jsonify({"response":response}), 200
             #print("executing2")
-            return render_template("display.html", name=surgery_name, missing=missingInstruments, wrong=wrongInstruments, detected_classes_image=detected_classes_image_path)
+            #return render_template("display.html", data=images, name=surgery_name, missing=missingInstruments, wrong=wrongInstruments)
 
-        except FileNotFoundError:
-            abort(404)
+        #except FileNotFoundError:
+            #abort(404)
 
 # API that returns image with detections on it
 @app.route('/image', methods= ['POST'])
