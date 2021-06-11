@@ -8,7 +8,7 @@ from yolov3_tf2.models import (
 )
 from yolov3_tf2.dataset import transform_images, load_tfrecord_dataset
 from yolov3_tf2.utils import draw_outputs
-from flask import Flask, request, Response, jsonify, send_from_directory, abort, render_template, render_template_string, make_response
+from flask import Flask, request, Response, jsonify, send_from_directory, abort, render_template, render_template_string, make_response, redirect, url_for
 import os
 import json
 import base64
@@ -113,7 +113,8 @@ function upload(file) {
     xhr.open("POST", "{{ url_for('upload') }}", true);
     xhr.onload = function() {
         if(this.status = 200) {
-            console.log(this.response);
+            //console.log(this.response);
+            window.location.href = '/nameform';
         } else {
             console.error(xhr);
         }
@@ -208,7 +209,10 @@ images = []
 def upload():
     if request.method == 'POST':
         images = request.files.getlist('snap')
-        return render_template("file_upload.html")
+        return redirect(url_for('nameform'))
+@app.route('/nameform', methods=['GET','POST'])
+def nameform():
+    return render_template("file_upload.html")
 
 @app.route('/detections', methods=['GET','POST'])
 def get_detections():
