@@ -8,13 +8,14 @@ from yolov3_tf2.models import (
 )
 from yolov3_tf2.dataset import transform_images, load_tfrecord_dataset
 from yolov3_tf2.utils import draw_outputs
-from flask import Flask, request, Response, jsonify, send_from_directory, abort, render_template
+from flask import Flask, request, Response, jsonify, send_from_directory, abort, render_template, render_template_string
 import os
 import json
 import base64
 import io
 from PIL import Image
 from base64 import decodestring
+
 #@source https://github.com/theAIGuysCode/Object-Detection-API
 # customize your API through the following parameters
 classes_path = './data/labels/custom.names'
@@ -70,7 +71,60 @@ def signup():
 @app.route('/')
 def home():
     #return render_template("file_upload.html")
-    return render_template("file_upload.html")
+    #return render_template("file_upload.html")
+    return render_template_string('''
+<video id="video" width="640" height="480" autoplay style="background-color: grey"></video>
+<button id="send">Take & Send Photo</button>
+<canvas id="canvas" width="640" height="480" style="background-color: grey"></canvas>
+
+<script>
+
+// Elements for taking the snapshot
+var video = document.getElementById('video');
+var canvas = document.getElementById('canvas');
+var context = canvas.getContext('2d');
+
+// Get access to the camera!
+if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    // Not adding `{ audio: true }` since we only want video now
+    navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+        //video.src = window.URL.createObjectURL(stream);
+        video.srcObject = stream;
+        video.play();
+    });
+}
+
+// Trigger photo take
+document.getElementById("send").addEventListener("click", function() {
+    context.drawImage(video, 0, 0, 640, 480); // copy frame from <video>
+    canvas.toBlob(upload, "image/jpeg");  // convert to file and execute function `upload`
+
+});
+
+function upload(file) {
+    // create form and append file
+    var formdata =  new FormData();
+    formdata.append("snap", file);
+
+    // create AJAX requests POST with file
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "{{ url_for('upload') }}", true);
+    xhr.onload = function() {
+        if(this.status = 200) {
+            console.log(this.response);
+        } else {
+            console.error(xhr);
+        }
+        alert(this.response);
+    };
+    xhr.send(formdata);
+
+}
+
+
+
+</script>
+''')
 
 @app.route('/success', methods = ['POST'])
 def success():
@@ -139,39 +193,22 @@ def gen(video):
 
 
 # API that returns JSON with classes found in images
-@app.route('/detections', methods=['GET','POST'])
-def get_detections():
+@app.route('/upload', methods=['GET','POST'])
+def upload():
     if request.method == 'POST':
-        surgery_name = request.form.get("surgery_name")
-        camera = cv2.VideoCapture(0)
-        i = 0
-        images = []
-        image_names = []
-        while i<=5:
-            return_value, image = camera.read()
-            #cv2.imshow('frame', image)
-            #video_feed(camera)
-            key = cv2.waitKey(1)
-            if i==5: #SPACE pressed hence we capture image k%256 == 32
-                images += [image]
-                image_names += ['opencv'+str(i)+'.png']
-                break
-                #cv2.imwrite('opencv'+str(i)+'.png', image)
-            i += 1
-        del(camera)
+        images = request.files.getlist('snap')
+        surgery_name = "Eye Surgery"
         raw_images = []
+        image_names = []
         #surgery_name = request.form.get("surgery_name")
         #images = request.files.getlist("file")
-
-        k = -1
         for image in images:
-            k = k+1
-            #image_name = image.filename
-            #image_names.append(image_name)
-            #image.save(os.path.join(os.getcwd(), image_names[k]))
-            #img_raw = tf.image.decode_image(
-                #open(image_names[k], 'rb').read(), channels=3)
-            raw_images.append(image)
+            image_name = image.filename
+            image_names+=[image_name]
+            image.save(os.path.join(os.getcwd(), image_name))
+            img_raw = tf.image.decode_image(
+                open(image_name, 'rb').read(), channels=3)
+            raw_images.append(img_raw)
 
         num = 0
 
@@ -181,7 +218,6 @@ def get_detections():
 
         for j in range(len(raw_images)):
             # create list of responses for current image
-
             responses = []
             raw_img = raw_images[j]
             num+=1
@@ -206,24 +242,23 @@ def get_detections():
                 "image": image_names[j],
                 "detections": responses
             })
-            img = cv2.cvtColor(raw_img, cv2.COLOR_RGB2BGR)
+            img = cv2.cvtColor(raw_img.numpy(), cv2.COLOR_RGB2BGR)
             img = draw_outputs(img, (boxes, scores, classes, nums), class_names)
             cv2.imwrite(output_path + 'detection' + str(num) + '.jpg', img)
             detected_classes_image_path = '../detections/' + 'detection' + str(num) + '.jpg'
             print('output saved to: {}'.format(output_path + 'detection' + str(num) + '.jpg'))
-
-
-
         missingInstruments, wrongInstruments = check(surgery_name, response)
         #remove temporary images
-        #for name in image_names:
-            #os.remove(name)
-        try:
-            #return jsonify({"response":response}), 200
-            return render_template("display.html", name=surgery_name, missing=missingInstruments, wrong=wrongInstruments, detected_classes_image=detected_classes_image_path)
+        print("executing")
+        for name in image_names:
+            os.remove(name)
+            try:
+                #return jsonify({"response":response}), 200
+                print("executing2")
+                return render_template("display.html", name=surgery_name, missing=missingInstruments, wrong=wrongInstruments, detected_classes_image=detected_classes_image_path)
 
-        except FileNotFoundError:
-            abort(404)
+            except FileNotFoundError:
+                abort(404)
 
 # API that returns image with detections on it
 @app.route('/image', methods= ['POST'])
@@ -276,4 +311,6 @@ def check(name, response):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host = '0.0.0.0', port=5000)
+    #app.run(debug=True, host = '0.0.0.0', port=5000)
+    #app.run(debug=True, host = '0.0.0.0', port=5000, ssl_context='adhoc')
+    app.run(debug=True, port=5000)
