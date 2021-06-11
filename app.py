@@ -63,14 +63,15 @@ surgeries = deserialize()
 # Initialize Flask application
 app = Flask(__name__)
 
-@app.route('/signup', methods=['GET','POST'])
-def signup():
-    if request.method == 'POST':
-        return jsonify(request.form['userID'], request.form['file'])
-    return render_template('signup.html')
-
-@app.route('/')
+@app.route('/', methods=['GET','POST'])
 def home():
+    return render_template('file_upload.html')
+
+@app.route('/webcam', methods=['GET','POST'])
+def webcam():
+    if request.method == 'POST':
+        global surgery_name
+        surgery_name = request.form.get("surgery_name")
     #return render_template("file_upload.html")
     #return render_template("file_upload.html")
     return render_template_string('''
@@ -191,17 +192,6 @@ def AddRemoveInstruments():
         serialize(surgeries)
         return render_template("success.html")
 
-@app.route('/video_feed')
-def video_feed(video):
-    return Response(gen(video),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-def gen(video):
-
-    success, image = video.read()
-    ret, jpeg = cv2.imencode('.jpg', image)
-    frame = jpeg.tobytes()
-    yield (b'--frame\r\n'
-           b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
 
 # API that returns JSON with classes found in images
@@ -211,6 +201,7 @@ def upload2():
     if request.method == 'POST':
         images = request.files.getlist('snap')
         return redirect(url_for('nameform'))
+
 @app.route('/nameform', methods=['GET','POST'])
 def nameform():
     return render_template("file_upload.html")
@@ -223,8 +214,8 @@ def result():
 def upload():
     if request.method == 'POST':
         images = request.files.getlist('snap')
-        global surgery_name
-        surgery_name = "Eye Surgery"
+        #global surgery_name
+        #surgery_name = "Eye Surgery"
         raw_images = []
         image_names = []
         #surgery_name = request.form.get("surgery_name")
