@@ -9,6 +9,6 @@ surgeries=json.load(f)
 
 #closing file
 f.close()
-surgeries["Knee Surgery"]=["scissor_golden", "scissor_length1"]
+surgeries["Eye Surgery"]= {"pincer": 1, "scissor_length1": 2, "scissor_length2": 1}
 with open("surgical_data.json", "w") as write_file:
     json.dump(surgeries, write_file, indent=4)

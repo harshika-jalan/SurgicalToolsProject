@@ -169,7 +169,13 @@ def addNewSurgery():
         name = request.form.get("name")
         instruments_string = request.form.get("instrument")
         instrument_list = instruments_string.split(', ')
-        surgeries[name] = instrument_list
+        instrument_dict = {}
+        for instrument in instrument_list:
+            if instrument in instrument_dict:
+                instrument_dict[instrument] = instrument_dict[instrument] + 1
+            else:
+                instrument_dict[instrument] = 1
+        surgeries[name] = instrument_dict
         serialize(surgeries)
         return render_template("success.html")
 #Adding/Removing instruments from existing surgical procedure
@@ -182,13 +188,28 @@ def AddRemoveInstruments():
     if request.method == "POST":
         name = request.form.get("name")
         add_instruments_string = request.form.get("addInstrument")
-        if len(add_instruments_string) != 0:
+        if len(add_instruments_string) != 0:#adding instruments
             add_instrument_list = add_instruments_string.split(', ')
-            surgeries[name] = surgeries[name] + add_instrument_list
+            add_instrument_dict = surgeries[name]
+            for instrument in add_instrument_list:
+                if instrument in add_instrument_dict:
+                    add_instrument_dict[instrument] = add_instrument_dict[instrument] + 1
+                else:
+                    add_instrument_dict[instrument] = 1
+            surgeries[name] = add_instrument_dict
+
         remove_instruments_string = request.form.get("removeInstrument")
-        if len(remove_instruments_string) != 0:
+        if len(remove_instruments_string) != 0:#removing instruments
             remove_instrument_list = remove_instruments_string.split(', ')
-        surgeries[name] = [s for s in surgeries[name] if s not in remove_instrument_list]
+            remove_instrument_dict = surgeries[name]
+            for instrument in remove_instrument_list:
+                if instrument in remove_instrument_dict:
+                    if remove_instrument_dict[instrument]>1:
+                        remove_instrument_dict[instrument] = remove_instrument_dict[instrument] - 1
+                    else:
+                        del remove_instrument_dict[instrument]
+            surgeries[name] = remove_instrument_dict
+
         serialize(surgeries)
         return render_template("success.html")
 
@@ -271,6 +292,8 @@ def upload():
         global missingInstruments
         global wrongInstruments
         missingInstruments, wrongInstruments = check(surgery_name, response)
+        print(missingInstruments)
+        print(wrongInstruments)
         #remove temporary images
         print("executing")
         for name in image_names:
@@ -324,12 +347,25 @@ def get_image():
 #method to check which tools are missing and incorrect
 def check(name, response):
     requiredInstruments = surgeries[name]
-    givenInstruments = []
+    givenInstruments = {}
     for r in response:
         for detection in r['detections']:
-            givenInstruments += [detection['class']]
-    missingInstruments = [instrument for instrument in requiredInstruments if instrument not in givenInstruments]
-    wrongInstruments = [instrument for instrument in givenInstruments if instrument not in requiredInstruments]
+            if detection['class'] in givenInstruments:
+                givenInstruments[detection['class']] = givenInstruments[detection['class']] + 1
+            else:
+                givenInstruments[detection['class']] = 1
+    missingInstruments = {}#[instrument for instrument in requiredInstruments if instrument not in givenInstruments]
+    for instrument, number in requiredInstruments.items():
+        if instrument not in givenInstruments:
+            missingInstruments[instrument] = number
+        elif givenInstruments[instrument] < number:
+            missingInstruments[instrument] = number - givenInstruments[instrument]
+    wrongInstruments = {} #[instrument for instrument in givenInstruments if instrument not in requiredInstruments]
+    for instrument, number in givenInstruments.items():
+        if instrument not in requiredInstruments:
+            wrongInstruments[instrument] = number
+        elif requiredInstruments[instrument] < number:
+            wrongInstruments[instrument] = number - requiredInstruments[instrument]
     return missingInstruments, wrongInstruments
 
 

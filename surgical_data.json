@@ -1,15 +1,21 @@
 {
-    "Foot Surgery": [
-        "pincer",
-        "shovel"
-    ],
-    "Knee Surgery": [
-        "scissor_golden",
-        "scissor_length1"
-    ],
-    "Eye Surgery": [
-        "scissor_length2",
-        "scissor_length1",
-        "shovel"
-    ]
+    "Foot Surgery": {
+        "pincer": 1,
+        "shovel": 3
+    },
+    "Knee Surgery": {
+        "scissor_golden": 1,
+        "scissor_length1": 2
+    },
+    "Eye Surgery": {
+        "pincer": 1,
+        "scissor_length1": 2,
+        "scissor_length2": 1
+    },
+    "Ear Surgery": {
+        "scissor_length2": 1,
+        "shovel": 1,
+        "pincer": 2,
+        "crabClaw": 1
+    }
 }
