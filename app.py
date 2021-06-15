@@ -226,9 +226,16 @@ def upload2():
 @app.route('/nameform', methods=['GET','POST'])
 def nameform():
     return render_template("file_upload.html")
+
 @app.route('/result', methods=['GET','POST'])
 def result():
-    return render_template("display.html", data=response, name=surgery_name, missing=missingInstruments, wrong=wrongInstruments, path=detected_classes_image_path)
+    missing_instruments_string = ""
+    wrong_instruments_string = ""
+    for key, value in missingInstruments.items():
+        missing_instruments_string = '\n'.join([missing_instruments_string, key + " : " + str(value)])
+    for key, value in wrongInstruments.items():
+        wrong_instruments_string = '\n'.join([wrong_instruments_string, key + " : " + str(value)])
+    return render_template("display.html", data=response, name=surgery_name, missing=missing_instruments_string, wrong=wrong_instruments_string, path=detected_classes_image_path)
 
 
 @app.route('/upload', methods=['GET','POST'])
