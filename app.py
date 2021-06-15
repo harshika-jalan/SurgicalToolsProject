@@ -76,7 +76,8 @@ def webcam():
     #return render_template("file_upload.html")
     return render_template_string('''
 <video id="video" width="640" height="480" autoplay style="background-color: grey"></video>
-<button id="send">Take & Send Photo</button>
+<button id="take">Take Photo</button>
+<button id="send">Send Photos</button>
 <canvas id="canvas" width="640" height="480" style="background-color: grey"></canvas>
 
 <script>
@@ -86,6 +87,7 @@ var video = document.getElementById('video');
 var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
 var localstream;
+var formdata =  new FormData();
 
 // Get access to the camera!
 if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -98,16 +100,25 @@ if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     });
 }
 
-// Trigger photo take
+// Send photos
 document.getElementById("send").addEventListener("click", function() {
     context.drawImage(video, 0, 0, 640, 480); // copy frame from <video>
     canvas.toBlob(upload, "image/jpeg");  // convert to file and execute function `upload`
 
 });
+// Trigger photo take
+document.getElementById("take").addEventListener("click", function() {
+    context.drawImage(video, 0, 0, 640, 480); // copy frame from <video>
+    canvas.toBlob(store, "image/jpeg");  // convert to file and execute function `upload`
+
+});
+function store(file) {
+    formdata.append("snap", file);
+}
 
 function upload(file) {
     // create form and append file
-    var formdata =  new FormData();
+    // var formdata =  new FormData();
     formdata.append("snap", file);
 
     // create AJAX requests POST with file
