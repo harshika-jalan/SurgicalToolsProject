@@ -15,6 +15,8 @@ import base64
 import io
 from PIL import Image
 from base64 import decodestring
+import matplotlib.pyplot as plt
+from random import randrange
 
 #@source https://github.com/theAIGuysCode/Object-Detection-API
 # customize your API through the following parameters
@@ -72,8 +74,7 @@ def webcam():
     if request.method == 'POST':
         global surgery_name
         surgery_name = request.form.get("surgery_name")
-    #return render_template("file_upload.html")
-    #return render_template("file_upload.html")
+
     return render_template_string('''
 <video id="video" width="640" height="480" autoplay style="background-color: grey"></video>
 <button id="take">Take Photo</button>
@@ -117,10 +118,6 @@ function store(file) {
 }
 
 function upload(file) {
-    // create form and append file
-    // var formdata =  new FormData();
-    formdata.append("snap", file);
-
     // create AJAX requests POST with file
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "{{ url_for('upload') }}", true);
@@ -257,6 +254,7 @@ def upload():
         #surgery_name = "Eye Surgery"
         raw_images = []
         image_names = []
+        image_stitching = False
         #surgery_name = request.form.get("surgery_name")
         #images = request.files.getlist("file")
         for image in images:
@@ -266,7 +264,9 @@ def upload():
             img_raw = tf.image.decode_image(
                 open(image_name, 'rb').read(), channels=3)
             raw_images.append(img_raw)
-
+        if len(raw_images)>1:
+            raw_images = [stitch(raw_images[0], raw_images[1])]
+            image_stitching = True
         num = 0
 
         # create list for final response
@@ -301,7 +301,10 @@ def upload():
                 "image": image_names[j],
                 "detections": responses
             })
-            img = cv2.cvtColor(raw_img.numpy(), cv2.COLOR_RGB2BGR)
+            if image_stitching:
+                img = cv2.cvtColor(raw_img, cv2.COLOR_RGB2BGR) #image stitching
+            else:
+                img = cv2.cvtColor(raw_img.numpy(), cv2.COLOR_RGB2BGR)
             img = draw_outputs(img, (boxes, scores, classes, nums), class_names)
             cv2.imwrite(output_path + 'detection' + str(num) + '.jpg', img)
             detected_classes_image_path = './static/' + 'detection' + str(num) + '.jpg'
@@ -385,6 +388,36 @@ def check(name, response):
         elif requiredInstruments[instrument] < number:
             wrongInstruments[instrument] = number - requiredInstruments[instrument]
     return missingInstruments, wrongInstruments
+
+#Function for image stitching (2 images)
+def stitch(img_, img) :
+    img_= img_.numpy()
+    img = img.numpy()
+    img1 = cv2.cvtColor(img_,cv2.COLOR_BGR2GRAY)
+    img2 = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    sift = cv2.xfeatures2d.SIFT_create()
+    # find the keypoints and descriptors with SIFT
+    kp1, des1 = sift.detectAndCompute(img1,None)
+    kp2, des2 = sift.detectAndCompute(img2,None)
+
+    bf = cv2.BFMatcher()
+    matches = bf.knnMatch(des1,des2, k=2)
+    # Apply ratio test
+    good = []
+    for m in matches:
+        if m[0].distance < 0.5*m[1].distance:
+            good.append(m)
+    matches = np.asarray(good)
+    if len(matches[:,0]) >= 4:
+        src = np.float32([ kp1[m.queryIdx].pt for m in matches[:,0] ]).reshape(-1,1,2)
+        dst = np.float32([ kp2[m.trainIdx].pt for m in matches[:,0] ]).reshape(-1,1,2)
+        H, masked = cv2.findHomography(src, dst, cv2.RANSAC, 5.0)
+        #print H
+    else:
+        raise AssertionError("Cannot find enough keypoints.")
+    dst = cv2.warpPerspective(img_,H,(img.shape[1] + img_.shape[1], img.shape[0]))
+    dst[0:img.shape[0], 0:img.shape[1]] = img
+    return dst
 
 
 if __name__ == '__main__':
