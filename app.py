@@ -75,78 +75,8 @@ def webcam():
         global surgery_name
         surgery_name = request.form.get("surgery_name")
 
-    return render_template_string('''
-<video id="video" width="640" height="480" autoplay style="background-color: grey"></video>
-<button id="take">Take Photo</button>
-<button id="send">Send Photos</button>
-<canvas id="canvas" width="640" height="480" style="background-color: grey"></canvas>
-
-<script>
-
-// Elements for taking the snapshot
-var video = document.getElementById('video');
-var canvas = document.getElementById('canvas');
-var context = canvas.getContext('2d');
-var localstream;
-var formdata =  new FormData();
-
-// Get access to the camera!
-if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    // Not adding `{ audio: true }` since we only want video now
-    navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
-        //video.src = window.URL.createObjectURL(stream);
-        video.srcObject = stream;
-        localstream = stream;
-        video.play();
-    });
-}
-
-// Send photos
-document.getElementById("send").addEventListener("click", function() {
-    context.drawImage(video, 0, 0, 640, 480); // copy frame from <video>
-    canvas.toBlob(upload, "image/jpeg");  // convert to file and execute function `upload`
-
-});
-// Trigger photo take
-document.getElementById("take").addEventListener("click", function() {
-    context.drawImage(video, 0, 0, 640, 480); // copy frame from <video>
-    canvas.toBlob(store, "image/jpeg");  // convert to file and execute function `upload`
-
-});
-function store(file) {
-    formdata.append("snap", file);
-}
-
-function upload(file) {
-    // create AJAX requests POST with file
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "{{ url_for('upload') }}", true);
-    xhr.onload = function() {
-        if(this.status = 200) {
-            //console.log(this.response);
-            window.location.href = '/result';
-        } else {
-            console.error(xhr);
-        }
-        alert(this.response);
-    };
-    vidOff()
-    xhr.send(formdata);
-
-}
-function vidOff() {
-  //clearInterval(theDrawLoop);
-  //ExtensionData.vidStatus = 'off';
-  video.pause();
-  video.src = "";
-  localstream.getTracks()[0].stop();
-  console.log("Vid off");
-}
-
-
-</script>
-''')
-
+    return render_template("takePicture.html")
+    
 @app.route('/success', methods = ['POST'])
 def success():
     if request.method == 'POST':
@@ -264,7 +194,7 @@ def upload():
             img_raw = tf.image.decode_image(
                 open(image_name, 'rb').read(), channels=3)
             raw_images.append(img_raw)
-        if len(raw_images)>1:
+        if len(raw_images)==2:
             raw_images = [stitch(raw_images[0], raw_images[1])]
             image_stitching = True
         num = 0
@@ -426,7 +356,7 @@ def stitch(img1, img2) :
     dst_pts = np.float32([ keypoints2[m.trainIdx].pt for m in good]).reshape(-1,1,2)
 
     # Establish a homography
-    M, _ = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+    M, _ = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
 
     result = warpImages(img2, img1, M)
 
