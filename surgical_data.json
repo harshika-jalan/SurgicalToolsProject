@@ -1,7 +1,7 @@
 {
     "Foot Surgery": {
         "pincer": 1,
-        "shovel": 3
+        "shovel": 2
     },
     "Knee Surgery": {
         "scissor_golden": 1,
@@ -17,5 +17,9 @@
         "shovel": 1,
         "pincer": 2,
         "crabClaw": 1
+    },
+    "Hand Surgery": {
+        "pincer": 1,
+        "shovel": 1
     }
 }
