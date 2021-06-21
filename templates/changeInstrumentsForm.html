@@ -1,7 +1,7 @@
 <html>
 <head>
 <title> ChangeInstrumentsForm</title>
-<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles.css') }}">
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='info_styles.css') }}">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
@@ -16,20 +16,20 @@
 		</div>
 
 
-		<div class="form-group">
+		<div class="form-group" id="formGroupExampleInput2">
       <label>
         Enter the instrument names which need to be added
         (You can enter multiple instrument names each seperated by comma)
     </label>
-    <textarea name="addInstrument" form="changeInstruments">Enter text here...</textarea>
+    <textarea name="addInstrument" form="changeInstruments" class="form-control" id="formGroupExampleInput2"></textarea>
 	   	</div>
 
-			<div class="form-group">
+			<div class="form-group" id="formGroupExampleInput2">
 	      <label>
 	        Enter the instrument names which need to be removed
 	        (You can enter multiple instrument names each seperated by comma)
 	    </label>
-	    <textarea name="removeInstrument" form="changeInstruments">Enter text here...</textarea>
+	    <textarea name="removeInstrument" form="changeInstruments" class="form-control" id="formGroupExampleInput2"></textarea>
 		   	</div>
 
 	  <div class="form-group">

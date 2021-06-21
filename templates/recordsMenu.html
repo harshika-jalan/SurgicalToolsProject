@@ -2,6 +2,8 @@
 <html>
 <head>
 <title>Records Menu</title>
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles.css') }}">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 <script language="javascript">
 function SelectRedirect(){
 // ON selection of section this function will work
@@ -28,8 +30,8 @@ break;
 </head>
 <body>
 
-<SELECT id="s1" NAME="section" onChange="SelectRedirect();">
-<Option value="">Select Section</option>
+<SELECT id="s1" NAME="section" onChange="SelectRedirect();" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example">
+<Option value="">Select</option>
 <Option value="Add New Surgical Procedure">Add New Surgical Procedure</option>
 <Option value="Add/Remove Instruments for an Existing Surgical Procedure">Add/Remove Instruments for an Existing Surgical Procedure</option>
 
