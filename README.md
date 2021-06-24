@@ -6,6 +6,7 @@ Keywords: Deep Learning, Computer Vision, Software development, Surgical Tool Ch
 Getting Started
 
 We can use either conda or pip for installments
+
 Conda 
 ```
 conda env create -f conda-cpu.yml
